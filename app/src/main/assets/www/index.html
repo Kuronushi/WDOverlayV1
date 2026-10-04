@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" id="themeColorMeta" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-192.png" />
+  <title>Image Parameter Matcher</title>
+  <script>try{document.documentElement.dataset.theme=localStorage.getItem('matcherTheme')||'light';}catch(e){}</script>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Image Parameter Matcher</h1>
+      <p>Store images and retrieve them using exact grid and object-direction parameters.</p>
+    </div>
+    <div class="header-actions"><button id="installBtn" class="secondary hidden-install">Install App</button></div>
+  </header>
+
+  <main>
+    <nav class="tabs">
+      <button class="tab active" data-tab="search">Search</button>
+      <button class="tab" data-tab="add">Add Image</button>
+      <button class="tab" data-tab="library">Library</button>
+      <button class="tab" data-tab="settings">Settings</button>
+    </nav>
+
+    <section id="search" class="panel active">
+      <h2>Search Images</h2>
+      <div class="grid-fields">
+        <label>Library ID<input id="searchLibraryId" type="number" min="1" max="99999" placeholder="Optional exact ID" /></label>
+      </div>
+      <p class="small-note">Enter an ID to search directly. Leave it blank to search by grid size and parameters.</p>
+      <div class="grid-fields grid-select-fields">
+        <label>Grid Size<select id="searchGridSize"></select></label>
+      </div>
+      <label>Existing Pattern (optional)
+        <select id="searchPatternTemplate">
+          <option value="">Choose a pattern to prefill objects…</option>
+        </select>
+      </label>
+      <p class="small-note">Patterns come from existing Library sub-albums for the selected grid. Choosing one fills the search object list with every direction set to Up.</p>
+      <div id="searchParams" class="param-list"></div>
+      <button id="addSearchParam" class="secondary">+ Add Parameter</button>
+      <button id="searchBtn" class="primary">Search Partial Matches</button>
+      <div id="searchStatus" class="status"></div>
+      <div id="searchResults" class="image-grid"></div>
+    </section>
+
+    <section id="add" class="panel">
+      <h2 id="addHeading">Add Image</h2>
+      <div class="grid-fields add-setup-fields">
+        <label>Grid Size<select id="addGridSize"></select></label>
+        <label>Library ID<input id="libraryEntryId" type="number" min="1" max="99999" placeholder="Optional — auto assign if blank" /></label>
+      </div>
+      <label>Existing Pattern (optional)
+        <select id="addPatternTemplate">
+          <option value="">Choose a pattern to prefill objects…</option>
+        </select>
+      </label>
+      <p class="small-note">Patterns come from existing Library sub-albums for the selected grid. Choosing one fills the object list with every direction set to Up.</p>
+      <label class="file-drop">
+        <span>Select one or more images</span>
+        <input id="imageInput" type="file" accept="image/*" multiple capture="environment" />
+      </label>
+      <div id="previewArea" class="preview-area"></div>
+      <div id="addParams" class="param-list"></div>
+      <button id="addAddParam" class="secondary">+ Add Parameter</button>
+      <label>Notes<textarea id="notes" rows="3" placeholder="Optional notes"></textarea></label>
+      <div class="edit-actions"><button id="saveBtn" class="primary">Save Image(s)</button><button id="cancelEditBtn" class="secondary hidden">Cancel Edit</button></div>
+      <div id="saveStatus" class="status"></div>
+    </section>
+
+    <section id="library" class="panel">
+      <div class="section-title-row">
+        <h2>Image Library</h2>
+        <button id="refreshLibrary" class="secondary">Refresh</button>
+      </div>
+      <div id="libraryStatus" class="status"></div>
+      <div id="libraryGrid" class="album-library"></div>
+    </section>
+
+    <section id="settings" class="panel">
+      <div class="appearance-setting">
+        <div>
+          <h2>Appearance</h2>
+          <p>Switch the entire app between light and dark mode. Your choice is saved on this device.</p>
+        </div>
+        <label class="theme-switch" for="darkModeToggle">
+          <input id="darkModeToggle" type="checkbox" />
+          <span class="theme-slider" aria-hidden="true"></span>
+          <span id="themeModeLabel">Light mode</span>
+        </label>
+      </div>
+      <hr />
+      <div class="section-title-row">
+        <div>
+          <h2>Live Matcher — Experimental</h2>
+          <p>Android only. Adds a draggable floating button over the game. Tap it to capture the current screen and preview exactly what the future matcher will scan.</p>
+          <p class="small-note">Phase 1 validates overlay + screen capture. It does not identify datasets yet. Android will ask for “display over other apps” and screen-capture permission.</p>
+        </div>
+      </div>
+      <div class="backup-actions">
+        <button id="startLiveMatcher" class="secondary">Enable Live Matcher</button>
+        <button id="stopLiveMatcher" class="danger">Stop Live Matcher</button>
+      </div>
+      <div id="liveMatcherStatus" class="status"></div>
+      <hr />
+      <h2>Parameter Options</h2>
+      <p>Add reusable object names and directions. Existing records will not be changed.</p>
+      <div class="settings-grid">
+        <div>
+          <h3>Objects and Display Order</h3>
+          <p class="small-note">Drag objects or use the arrow buttons. This order controls how object names appear in Library sub-albums.</p>
+          <div id="objectTags" class="object-order-list"></div>
+          <div class="inline-form"><input id="newObject" placeholder="e.g. Staff" /><button id="addObject" class="secondary">Add</button></div>
+        </div>
+        <div>
+          <h3>Directions</h3>
+          <div id="directionTags" class="tag-list"></div>
+          <div class="inline-form"><input id="newDirection" placeholder="e.g. Left" /><button id="addDirection" class="secondary">Add</button></div>
+        </div>
+        <div>
+          <h3>Grid Sizes</h3>
+          <p class="small-note">These options appear in Search, Add Image, and Edit.</p>
+          <div id="gridSizeTags" class="tag-list"></div>
+          <div class="inline-form grid-size-form">
+            <input id="newGridWidth" type="number" min="1" max="999" placeholder="Width" />
+            <span>×</span>
+            <input id="newGridHeight" type="number" min="1" max="999" placeholder="Height" />
+            <button id="addGridSizeButton" class="secondary">Add</button>
+          </div>
+        </div>
+      </div>
+      <hr />
+      <div class="section-title-row">
+        <div>
+          <h2>Dataset Pictures</h2>
+          <p>Give each object a base picture and optional pictures for every direction. New objects and directions automatically appear here.</p>
+        </div>
+        <button id="refreshDefinitions" class="secondary">Refresh</button>
+      </div>
+      <div id="definitionStatus" class="status"></div>
+      <div id="datasetDefinitions" class="definition-list"></div>
+      <hr />
+      <h3>Backup &amp; Restore</h3>
+      <p class="small-note">Export a complete backup or restore one previously saved.</p>
+      <div class="backup-actions">
+        <button id="exportBtn" class="secondary">Export Backup</button>
+        <input id="importInput" type="file" accept="application/json" />
+        <button id="importBtn" class="secondary">Import Backup</button>
+      </div>
+      <div id="exportStatus" class="status"></div>
+      <div id="importStatus" class="status"></div>
+    </section>
+  </main>
+
+  <template id="paramRowTemplate">
+    <div class="param-row">
+      <div class="param-object-preview" aria-label="Selected object picture"><span>?</span></div>
+      <select class="object-select"></select>
+      <select class="direction-select"></select>
+      <button class="remove-param danger" title="Remove">×</button>
+    </div>
+  </template>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <button id="closeModal" class="modal-close">×</button>
+      <img id="modalImage" alt="Full size" />
+      <div id="modalInfo"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

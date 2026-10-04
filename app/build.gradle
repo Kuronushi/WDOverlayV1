@@ -1,0 +1,19 @@
+apply plugin: 'com.android.application'
+
+android {
+    namespace 'com.imagematcher.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.imagematcher.app'
+        minSdk 24
+        targetSdk 35
+        versionCode 29
+        versionName '1.11.0-live-alpha1'
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
